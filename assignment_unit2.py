@@ -75,7 +75,7 @@ def transfer_data(state):
     else:
         return False
 
-# I WAS HERE
+# I WAS HERE : Next step, implement the navigate method logic
 
 def travel_op(state, y):
     x = state.car_driving_location

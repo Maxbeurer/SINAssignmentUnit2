@@ -9,8 +9,12 @@ def distance(p1, p2):
     return sqrt(x + y)
 
 
-def select_new_city(state, y):  # evaluation function
-    x = state.car_driving_location
+# I WAS HERE : Next step, implement the select_next_point function
+
+
+def select_next_point(state):  # evaluation function
+    x = state.rover_location
+
     best = inf  # big float
     for c in state.connection.keys():
         if c not in state.path and c in state.connection[x]:
@@ -75,52 +79,49 @@ def transfer_data(state):
     else:
         return False
 
-# I WAS HERE : Next step, implement the navigate method logic
-
-def travel_op(state, y):
-    x = state.car_driving_location
+def navigate_op(state, y):
+    x = state.rover_location
     d = distance(state.coordinates[x], state.coordinates[y])
-    if y in state.connection[x] and state.carloaded == True and state.car_driving_fuel >= d:
-        state.car_driving_location = y
-        state.path.append(y)
-        state.cost += d
-        state.car_driving_fuel -= d
+    if y in state.connection[x] and state.rover_battery >= d:
+        state.rover_location = y
+        state.rover_current_mission_route.append(y)
+        state.rover_battery -= d
         return state
     else:
         return False
 
-pyhop.declare_operators(travel_op,load_car_op,unload_car_op)
+pyhop.declare_operators(navigate_op,gather_samples,analyse_samples,transfer_data)
 print()
 pyhop.print_operators()
 
 
-def travel_m(state, goal):
-    x = state.car_driving_location
+def navigate_m(state, goal):
+    x = state.rover_mision_list
     y = goal.final
     if x != y:
-        z = select_new_city(state, y)
+        z = select_next_point(state)
         g = pyhop.Goal('g')
         g.final = y
-        return [('travel_op', z), ('travel_to_city', g)]
+        return [('navigate_op', z), ('navigate_to_next', g)]
     return False
 
 
 def already_there(state, goal):
-    x = state.car_driving_location
+    x = state.rover_mision_list
     y = goal.final
     if x == y:
         return []
     return False
 
 
-pyhop.declare_methods('travel_to_city', travel_m, already_there)
+pyhop.declare_methods('navigate_to_next', navigate_m, already_there)
 
 
 def do_mission(state, goal):
     x = state.rover_mision_list
     y = goal.final
     if x != y:
-        return [('gather_samples',x[0]),('analyse_samples',),('transfer_data',),('navigate', goal), ('explore', goal)]
+        return [('gather_samples',x[0]),('analyse_samples',),('transfer_data',),('navigate_to_next', goal), ('explore', goal)]
     return False
 
 def final(state, goal):
